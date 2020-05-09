@@ -41,13 +41,18 @@ class LocalSearch:
                            (self.D[loc[r], loc[k]] - self.D[loc[s], loc[k]])
         return fun_sum
 
-    def run(self, method, dlb=True, eye=True):
+    def run(self, method, dlb=True, eye=True, itertations=100):
+        method_name = copy.deepcopy(method)
         method = getattr(LocalSearch, method)
         self.adj_matrix = self.initial_solution(self.n, eye=eye)
         self.cost_fun = self.cost_function()
+        # print(self.cost_fun)
         except_fac = -1
         while True:
-            result = method(self, except_fac, dlb=dlb)
+            if 'stochastic_2_opt' in method_name:
+                result = method(self, itertations)
+            else:
+                result = method(self, except_fac, dlb=dlb)
             if result is not None:
                 r = result['r']
                 s = result['s']
@@ -76,28 +81,41 @@ class LocalSearch:
 
     def best_improvement(self, except_fac, dlb=False):
 
-            min_delta = 0
-            min_result = None
+        min_delta = 0
+        min_result = None
 
-            if dlb:
-                bits = np.zeros(self.n)
-            for r, row in enumerate(self.adj_matrix):
-                if r == except_fac:
+        if dlb:
+            bits = np.zeros(self.n)
+        for r, row in enumerate(self.adj_matrix):
+            if r == except_fac:
+                continue
+            for location in np.where(row == 0)[0]:
+                s = np.where(self.adj_matrix[:, location] == 1)[0].item()
+                if dlb and bits[s]:
                     continue
-                for location in np.where(row == 0)[0]:
-                    s = np.where(self.adj_matrix[:, location] == 1)[0].item()
-                    if dlb and bits[s]:
-                        continue
-                    delta = self.delta_function(s, r)
-                    if delta < 0 and delta < min_delta:
-                        min_delta = delta
-                        min_result = {'adj_matrix': self.adj_matrix, 'delta': delta, 'r': r, 's': s}
+                delta = self.delta_function(s, r)
+                if delta < 0 and delta < min_delta:
+                    min_delta = delta
+                    min_result = {'adj_matrix': self.adj_matrix, 'delta': delta, 'r': r, 's': s}
 
-                if min_result is not None:
-                    return min_result
-                elif dlb:
-                    bits[r] = 0
+            if min_result is not None:
+                return min_result
+            elif dlb:
+                bits[r] = 0
 
+    def stochastic_2_opt(self, iterations):  # TODO: fix
+        for iter in range(iterations):
+            a = np.random.randint(low=0, high=self.n-1)
+            b = np.random.randint(low=a+1, high=self.n)
+            swap_part = np.where(self.adj_matrix.T == 1)[1][a:b+1]
+            delta_sum = 0
+            for idx in range(swap_part.size//2):
+                delta_sum += self.delta_function(swap_part[idx], swap_part[-(idx+1)])
+            if delta_sum < 0:
+                self.cost_fun += delta_sum
+                self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
+                verbose = np.where(self.adj_matrix.T == 1)[1]
+                print(verbose)
 
 
 n = 4
@@ -113,9 +131,7 @@ test = LocalSearch(n, D, F)
 print('F is: \n', F)
 print('D is: \n', D)
 print(test.cost_fun)
-print('\n', test.run('first_improvement'))
-print(test.cost_fun)
-print('\n', test.run('best_improvement'))
+print('\n', test.run('stochastic_2_opt', itertations=1000))
 print(test.cost_fun)
 
 
