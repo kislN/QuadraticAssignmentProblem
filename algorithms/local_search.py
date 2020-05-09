@@ -81,7 +81,44 @@ class LocalSearch:
             if not flag:
                 break
 
-        return self.adj_matrix
+        return np.where(self.adj_matrix.T==1)[1]
+
+
+
+    def best_improvement(self, d_l_bits=False):
+        except_fac = -1
+        while(1):
+            if d_l_bits:
+                bits = np.zeros(self.n)
+            flag = 0
+            for r, row in enumerate(self.adj_matrix):
+                if r == except_fac:
+                    continue
+
+                min_delta = 0
+                min_s = r
+                for location in np.where(row==0)[0]:
+                    s = np.where(self.adj_matrix[:,location]==1)[0].item()  # factory in the location
+                    if d_l_bits and bits[s]:
+                        continue
+
+                    delta = self.delta_function(s, r)
+                    if delta < min_delta:
+                        min_delta = delta
+                        min_s = s
+
+                if min_delta < 0:
+                    self.cost_fun += min_delta
+                    self.adj_matrix[[r, min_s]] = self.adj_matrix[[min_s, r]]
+                    flag = 1
+                    break
+                elif d_l_bits:
+                    bits[r] = 1
+
+            if not flag:
+                break
+
+        return np.where(self.adj_matrix.T==1)[1]
 
 
 n = 3
@@ -92,12 +129,36 @@ D = (D + D.T)
 np.fill_diagonal(D, 0)
 
 n = 4
-D = np.array([[0, 22, 53, 53],[22, 0, 40, 62],[53, 40, 0, 55],[53, 62, 55, 0]])
-F = np.array([[0, 3, 0,	2],[3, 0, 0, 1],[0,	0, 0, 4],[2,1,4,0]])
+D = np.array([[0, 22, 53, 53],
+              [22, 0, 40, 62],
+              [53, 40, 0, 55],
+              [53, 62, 55, 0]])
+F = np.array([[0, 3, 0,	2],
+              [3, 0, 0, 1],
+              [0, 0, 0, 4],
+              [2, 1, 4, 0]])
 test = LocalSearch(n, D, F)
 print('F is: \n', F)
 print('D is: \n', D)
 print(test.cost_fun)
-
-print('\n', test.first_improvement(d_l_bits=True))
+print('\n', test.best_improvement(d_l_bits=True))
 print(test.cost_fun)
+
+n = 5
+D = np.array([[0,	50,	50,	94,	50],
+              [50,	0,	22,	50,	36],
+              [50,	22,	0,	44,	14],
+              [94,	50,	44,	0,	50],
+              [50,	36,	14,	50,	0]])
+F = np.array([[0,	0,	2,	0,	3],
+              [0,	0,	0,	3,	0],
+              [2,	0,	0,	0,	0],
+              [0,	3,	0,	0,	1],
+              [3,	0,	0,	1,	0]])
+test = LocalSearch(n, D, F)
+print('F is: \n', F)
+print('D is: \n', D)
+print(test.cost_fun)
+print('\n', test.best_improvement(d_l_bits=True))
+print(test.cost_fun)
+
