@@ -13,11 +13,11 @@ np.random.seed(42)
 """
 
 class LocalSearch:
-    def __init__(self, n, D, F):
+    def __init__(self, n, D, F, eye=True):
         self.n = n
         self.D = D
         self.F = F
-        self.adj_matrix = self.initial_solution(n, eye=True)
+        self.adj_matrix = self.initial_solution(n, eye=eye)
         self.cost_fun = self.cost_function()
 
     def initial_solution(self, n, eye=False) -> np.array:
@@ -39,10 +39,9 @@ class LocalSearch:
                     fun_sum += self.F[i,j] * self.D[loc[i], loc[j]]
         return fun_sum
 
-    def delta_function(self, r, s):
+    def delta_function(self, r, s) -> int:
         fun_sum = 0
         loc     = np.where(self.adj_matrix==1)[1]
-
         for k in range(self.n):
             if k != r and k != s:
                 fun_sum += (self.F[k,r] + self.F[r, k]) * \
@@ -51,21 +50,22 @@ class LocalSearch:
                            (self.D[loc[r],loc[k]] - self.D[loc[s],loc[k]])
         return fun_sum
 
-    def first_improvement(self, d_l_bits=False):
+    def first_improvement(self, d_l_bits=False) -> np.array:
         except_fac = -1
         while(1):
             if d_l_bits:
                 bits = np.zeros(self.n)
             flag = 0
+
             for r, row in enumerate(self.adj_matrix):
                 if r == except_fac:
                     continue
 
                 for location in np.where(row==0)[0]:
-                    s = np.where(self.adj_matrix[:,location]==1)[0].item()  # factory in the location
+                    # s is factory in the location
+                    s = np.where(self.adj_matrix[:,location]==1)[0].item()
                     if d_l_bits and bits[s]:
                         continue
-
                     delta = self.delta_function(s, r)
                     if delta < 0:
                         self.cost_fun += delta
@@ -85,23 +85,23 @@ class LocalSearch:
 
 
 
-    def best_improvement(self, d_l_bits=False):
+    def best_improvement(self, d_l_bits=False) -> np.array:
         except_fac = -1
         while(1):
             if d_l_bits:
                 bits = np.zeros(self.n)
             flag = 0
+
             for r, row in enumerate(self.adj_matrix):
                 if r == except_fac:
                     continue
-
                 min_delta = 0
                 min_s = r
                 for location in np.where(row==0)[0]:
-                    s = np.where(self.adj_matrix[:,location]==1)[0].item()  # factory in the location
+                    # s is factory in the location
+                    s = np.where(self.adj_matrix[:,location]==1)[0].item()
                     if d_l_bits and bits[s]:
                         continue
-
                     delta = self.delta_function(s, r)
                     if delta < min_delta:
                         min_delta = delta
