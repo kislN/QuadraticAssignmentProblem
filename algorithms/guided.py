@@ -66,6 +66,31 @@ class Guided(LocalSearch):
         return None
 
 
+    def best_improvement(self, except_fac, dlb=False):
+        best_cost = self.cost_fun
+        best_adj = None
+        if dlb:
+            bits = np.zeros(self.n)
+        for r, row in enumerate(self.adj_matrix):
+            if r == except_fac:
+                continue
+            for location in np.where(row == 0)[0]:
+                s = np.where(self.adj_matrix[:, location] == 1)[0].item()
+                if dlb and bits[s]:
+                    continue
+                prev_cost = self.cost_fun
+                prev_adj = self.adj_matrix
+                self.adj_matrix[[r, s]] = self.adj_matrix[[s, r]]
+                self.cost_fun = self.cost_function()
+                if delta < 0 and delta < min_delta:
+                    min_delta = delta
+                    min_result = {'delta': delta, 'r': r, 's': s}
+            if min_result is not None:
+                return min_result
+            elif dlb:
+                bits[r] = 0
+
+
     def run(self, method, dlb=True, epoches=10, mu=0.1):
         self.adj_matrix = self.initial_solution(self.n)
         self.cost_fun = self.cost_function()
