@@ -1,5 +1,7 @@
-from lab3.QuadraticAssignmentProblem.algorithms.my_local_search import LocalSearch
-from lab3.QuadraticAssignmentProblem.tools.load_data import get_data
+from algorithms.local_search import LocalSearch
+from algorithms.iterated import Iterated
+from algorithms.guided import Guided
+from tools.load_data import get_data
 import timeit
 
 paths = ['./data/benchmarks/tai20a', './data/benchmarks/tai40a', './data/benchmarks/tai60a',
@@ -10,7 +12,7 @@ for path in paths:
     algo = LocalSearch(*data)
     print(path.rsplit('/', maxsplit=1)[-1], ' result:')
     start = timeit.default_timer()
-    result = algo.run('best_improvement')
+    result = algo.run('stochastic_2_opt', itertations=5000)
     end = timeit.default_timer()
     print(result)
     print(f"Cost: {algo.cost_fun}")

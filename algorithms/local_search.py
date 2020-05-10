@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-np.random.seed(42)
+# np.random.seed(42)
 
 
 class LocalSearch:
@@ -40,6 +40,8 @@ class LocalSearch:
                            (self.F[k, s] + self.F[s, k]) * \
                            (self.D[loc[r], loc[k]] - self.D[loc[s], loc[k]])
         return fun_sum
+
+
 
     def run(self, method, dlb=True, eye=True, itertations=100):
         method_name = copy.deepcopy(method)
@@ -103,39 +105,45 @@ class LocalSearch:
             elif dlb:
                 bits[r] = 0
 
-    def stochastic_2_opt(self, iterations):  # TODO: fix
+    def stochastic_2_opt(self, iterations):
         for iter in range(iterations):
             a = np.random.randint(low=0, high=self.n-1)
             b = np.random.randint(low=a+1, high=self.n)
             swap_part = np.where(self.adj_matrix.T == 1)[1][a:b+1]
-            delta_sum = 0
-            for idx in range(swap_part.size//2):
-                delta_sum += self.delta_function(swap_part[idx], swap_part[-(idx+1)])
-            if delta_sum < 0:
-                self.cost_fun += delta_sum
+            prev_cost = self.cost_fun
+            self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
+            self.cost_fun = self.cost_function()
+            if prev_cost < self.cost_fun:
                 self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
-                verbose = np.where(self.adj_matrix.T == 1)[1]
-                print(verbose)
+                self.cost_fun = prev_cost
+        return None
+            # for idx in range(swap_part.size//2):
+            #     delta_sum += self.delta_function(swap_part[idx], swap_part[-(idx+1)])
+            # if delta_sum < 0:
+            #     self.cost_fun += delta_sum
+            #     self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
+            #     verbose = np.where(self.adj_matrix.T == 1)[1]
+            #     print(verbose)
 
 
-n = 4
-D = np.array([[0, 22, 53, 53],
-              [22, 0, 40, 62],
-              [53, 40, 0, 55],
-              [53, 62, 55, 0]])
-F = np.array([[0, 3, 0, 2],
-              [3, 0, 0, 1],
-              [0, 0, 0, 4],
-              [2, 1, 4, 0]])
-test = LocalSearch(n, D, F)
-print('F is: \n', F)
-print('D is: \n', D)
-print(test.cost_fun)
-print('\n', test.run('stochastic_2_opt', itertations=1000))
-print(test.cost_fun)
+# n = 4
+# D = np.array([[0, 22, 53, 53],
+#               [22, 0, 40, 62],
+#               [53, 40, 0, 55],
+#               [53, 62, 55, 0]])
+# F = np.array([[0, 3, 0, 2],
+#               [3, 0, 0, 1],
+#               [0, 0, 0, 4],
+#               [2, 1, 4, 0]])
+# test = LocalSearch(n, D, F)
+# print('F is: \n', F)
+# print('D is: \n', D)
+# print(test.cost_fun)
+# print('\n', test.run('stochastic_2_opt', itertations=100))
+# print(test.cost_fun)
 
 
-
+#
 # n = 5
 # D = np.array([[0, 50, 50, 94, 50],
 #               [50, 0, 22, 50, 36],
@@ -151,5 +159,5 @@ print(test.cost_fun)
 # print('F is: \n', F)
 # print('D is: \n', D)
 # print(test.cost_fun)
-# print('\n', test.run('best_improvement'))
+# print('\n', test.run('stochastic_2_opt', itertations=100))
 # print(test.cost_fun)
