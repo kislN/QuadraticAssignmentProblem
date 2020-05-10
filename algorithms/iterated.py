@@ -5,42 +5,47 @@ from algorithms.local_search import LocalSearch
 
 class Iterated(LocalSearch):
 
+    def __init__(self, n, D, F):
+        super(Iterated, self).__init__(n, D, F)
+        self.swap_num = max(1, n // 5)
+
     def run_local(self, method, dlb=True):
+        method_name = copy.deepcopy(method)
         method = getattr(LocalSearch, method)
         except_fac = -1
         while True:
-            result = method(self, except_fac, dlb=dlb)
+            if 'stochastic_2_opt' in method_name:
+                result = method(self, iters=100)
+            else:
+                result = method(self, except_fac, dlb=dlb)
             if result is not None:
                 r = result['r']
                 s = result['s']
-                self.adj_matrix[[r, s]] = self.adj_matrix[[s, r]]
+                self.solution[[r, s]] = self.solution[[s, r]]
                 self.cost_fun += result['delta']
                 except_fac = result['r']
             else:
-                return np.where(self.adj_matrix.T == 1)[1]
+                return
 
-
-    def run(self, method, dlb=True, eye=False, iters=100, swap_num=1):
-        self.adj_matrix = self.initial_solution(self.n, eye=eye)
+    def run(self, method, dlb=True, eye=False, iters=100):
+        self.solution = self.initial_solution(eye=eye)
         self.cost_fun = self.cost_function()
         self.run_local(method, dlb=dlb)
-        best_adj = copy.deepcopy(self.adj_matrix)
+        best_solution = copy.deepcopy(self.solution)      # TODO: check deepcopy
         best_cost = self.cost_fun
         for _ in range(iters):
-            self.perturbation(swap_num)
+            self.perturbation()
             self.run_local(method, dlb=dlb)
             if self.cost_fun < best_cost:
                 best_cost = self.cost_fun
-                best_adj = self.adj_matrix
-        self.adj_matrix = best_adj
+                best_solution = self.solution
+        self.solution = best_solution
         self.cost_fun = best_cost
-        return np.where(self.adj_matrix.T == 1)[1]
+        return np.argsort(self.solution)
 
-
-    def perturbation(self, swap_num):
-        assert 2*swap_num < self.n, 'You are asshole'
-        k = sample(range(self.n), 2*swap_num)
-        self.adj_matrix[k] = self.adj_matrix[np.flip(k)]
+    def perturbation(self):
+        k = sample(range(self.n), 2 * self.swap_num)
+        self.solution[k] = self.solution[np.flip(k)]
         self.cost_fun = self.cost_function()
 
 

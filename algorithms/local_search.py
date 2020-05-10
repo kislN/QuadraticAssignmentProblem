@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
 # np.random.seed(42)
 
 class LocalSearch:
@@ -9,9 +10,8 @@ class LocalSearch:
         self.D = D
         self.F = F
         self.solution = None
-        self.adj_matrix = None
         self.cost_fun = None
-
+        self.plot_list = []
 
     def initial_solution(self, eye=False) -> np.array:
         if eye:
@@ -36,16 +36,13 @@ class LocalSearch:
                            (self.D[self.solution[r], self.solution[k]] - self.D[self.solution[s], self.solution[k]])
         return fun_sum
 
-
     def run(self, method, dlb=True, eye=False, iters=100):
         method_name = copy.deepcopy(method)
         method = getattr(LocalSearch, method)
         self.solution = self.initial_solution(eye=eye)
         self.cost_fun = self.cost_function()
         except_fac = -1
-
         while True:
-        # for _ in range(100):
             if 'stochastic_2_opt' in method_name:
                 result = method(self, iters)
             else:
@@ -55,10 +52,10 @@ class LocalSearch:
                 s = result['s']
                 self.solution[[r, s]] = self.solution[[s, r]]
                 self.cost_fun += result['delta']
+                self.plot_list.append(self.cost_fun)
                 except_fac = result['r']
             else:
                 return np.argsort(self.solution)
-
 
     def first_improvement(self, except_fac, dlb=False):
         if dlb:
@@ -75,7 +72,6 @@ class LocalSearch:
                         return {'delta': delta, 'r': r, 's': s}
             bits[r] = 1
         return None
-
 
     def best_improvement(self, except_fac, dlb=False):
         min_delta = 0
@@ -99,18 +95,15 @@ class LocalSearch:
                 bits[r] = 1
         return None
 
-
-
     def stochastic_2_opt(self, iters):
-        print('here')
         flag = 0
         for iter in range(iters):
             a = np.random.randint(low=0, high=self.n-1)
             b = np.random.randint(low=a+1, high=self.n)
-            swap_part = np.arange(a,b+1)
+            swap_part = np.arange(a, b+1)
             prev_cost = self.cost_fun
             prev_solution = self.solution
-
+            self.plot_list.append(self.cost_fun)
             self.solution[swap_part] = self.solution[np.flip(swap_part)]
             self.cost_fun = self.cost_function()
             flag = 1
@@ -121,6 +114,14 @@ class LocalSearch:
         if flag:
             return {'delta': 0, 'r': 0, 's': 0}
         return None
+
+    def plot(self, title='Algo'):
+        plt.plot(list(range(len(self.plot_list))), self.plot_list)
+        plt.grid()
+        plt.title(title)
+        plt.xlabel('iterations')
+        plt.ylabel('cost')
+        plt.show()
 
 
 
@@ -142,19 +143,22 @@ class LocalSearch:
 
 
 
-# n = 5
-# D = np.array([[0, 50, 50, 94, 50],
-#               [50, 0, 22, 50, 36],
-#               [50, 22, 0, 44, 14],
-#               [94, 50, 44, 0, 50],
-#               [50, 36, 14, 50, 0]])
-# F = np.array([[0, 0, 2, 0, 3],
-#               [0, 0, 0, 3, 0],
-#               [2, 0, 0, 0, 0],
-#               [0, 3, 0, 0, 1],
-#               [3, 0, 0, 1, 0]])
-# test = LocalSearch(n, D, F)
-# print('F is: \n', F)
-# print('D is: \n', D)
-# print('\n', test.run('stochastic_2_opt', iters=100))
-# print(test.cost_fun)
+n = 5
+D = np.array([[0, 50, 50, 94, 50],
+              [50, 0, 22, 50, 36],
+              [50, 22, 0, 44, 14],
+              [94, 50, 44, 0, 50],
+              [50, 36, 14, 50, 0]])
+F = np.array([[0, 0, 2, 0, 3],
+              [0, 0, 0, 3, 0],
+              [2, 0, 0, 0, 0],
+              [0, 3, 0, 0, 1],
+              [3, 0, 0, 1, 0]])
+test = LocalSearch(n, D, F)
+print('F is: \n', F)
+print('D is: \n', D)
+print('\n', test.run('stochastic_2_opt', iters=100))
+print(test.cost_fun)
+print(test.plot_list)
+test.plot(title='So')
+
