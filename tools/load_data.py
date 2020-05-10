@@ -1,6 +1,9 @@
 import numpy as np
+from os.path import join
+import os
 
-def get_data(path):
+def get_case(path):
+
     with open(path, 'r') as file:
         data = file.readlines()
         n = int(data.pop(0)[:-1])
@@ -20,8 +23,19 @@ def get_data(path):
             F.append(np.asarray(string, dtype=np.int32))
         F = np.asarray(F)
 
-    return n, D, F
+    dct = { 'n': n,
+            'D': D,
+            'F': F,
+            }
 
+    return dct
 
-if __name__ == '__main__':
-    get_data('data/benchmarks/tai20a')
+def get_all() -> list:
+    path = './data/benchmarks'
+    cases = []
+    for file_name in sorted(os.listdir(path)):
+        cases.append(get_case(join(path, file_name)))
+        print(file_name, ' is loaded!')
+    cases = sorted(cases, key=lambda x: x['n'])
+    return cases
+

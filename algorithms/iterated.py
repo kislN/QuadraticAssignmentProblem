@@ -5,15 +5,11 @@ from algorithms.local_search import LocalSearch
 
 class Iterated(LocalSearch):
 
-    def run_local(self, method, dlb=True, itertations=100):
-        method_name = copy.deepcopy(method)
+    def run_local(self, method, dlb=True):
         method = getattr(LocalSearch, method)
         except_fac = -1
         while True:
-            if 'stochastic_2_opt' in method_name:
-                result = method(self, itertations)
-            else:
-                result = method(self, except_fac, dlb=dlb)
+            result = method(self, except_fac, dlb=dlb)
             if result is not None:
                 r = result['r']
                 s = result['s']
@@ -23,25 +19,25 @@ class Iterated(LocalSearch):
             else:
                 return np.where(self.adj_matrix.T == 1)[1]
 
-    def run(self, method, dlb=True, eye=True, itertations=100, epoches=10):
+
+    def run(self, method, dlb=True, eye=False, iters=100, swap_num=1):
         self.adj_matrix = self.initial_solution(self.n, eye=eye)
         self.cost_fun = self.cost_function()
-        self.run_local(method, dlb=dlb, itertations=itertations)
+        self.run_local(method, dlb=dlb)
         best_adj = copy.deepcopy(self.adj_matrix)
         best_cost = self.cost_fun
-        for ind in range(epoches):
-            self.perturbation()
-            self.run_local(method, dlb=dlb, itertations=itertations)
+        for _ in range(iters):
+            self.perturbation(swap_num)
+            self.run_local(method, dlb=dlb)
             if self.cost_fun < best_cost:
                 best_cost = self.cost_fun
                 best_adj = self.adj_matrix
-
         self.adj_matrix = best_adj
         self.cost_fun = best_cost
         return np.where(self.adj_matrix.T == 1)[1]
 
 
-    def perturbation(self, swap_num=1):
+    def perturbation(self, swap_num):
         assert 2*swap_num < self.n, 'You are asshole'
         k = sample(range(self.n), 2*swap_num)
         self.adj_matrix[k] = self.adj_matrix[np.flip(k)]

@@ -2,14 +2,15 @@ import numpy as np
 import copy
 # np.random.seed(42)
 
-
 class LocalSearch:
+
     def __init__(self, n, D, F):
         self.n = n
         self.D = D
         self.F = F
         self.adj_matrix = None
         self.cost_fun = None
+
 
     def initial_solution(self, n, eye=False) -> np.array:
         if eye:
@@ -21,6 +22,7 @@ class LocalSearch:
             adj_matrix[i][ind] = 1
         return adj_matrix
 
+
     def cost_function(self) -> int:
         fun_sum = 0
         loc = np.where(self.adj_matrix == 1)[1]
@@ -29,6 +31,7 @@ class LocalSearch:
                 if i != j:
                     fun_sum += self.F[i, j] * self.D[loc[i], loc[j]]
         return fun_sum
+
 
     def delta_function(self, r, s) -> int:
         fun_sum = 0
@@ -42,27 +45,27 @@ class LocalSearch:
         return fun_sum
 
 
-
-    def run(self, method, dlb=True, eye=True, itertations=100):
+    def run(self, method, dlb=True, eye=False, iters=100):
         method_name = copy.deepcopy(method)
         method = getattr(LocalSearch, method)
         self.adj_matrix = self.initial_solution(self.n, eye=eye)
         self.cost_fun = self.cost_function()
-        # print(self.cost_fun)
         except_fac = -1
-        while True:
-            if 'stochastic_2_opt' in method_name:
-                result = method(self, itertations)
-            else:
+        if 'stochastic_2_opt' in method_name:
+            method(self, iters)
+            return np.where(self.adj_matrix.T == 1)[1]
+        else:
+            while True:
                 result = method(self, except_fac, dlb=dlb)
-            if result is not None:
-                r = result['r']
-                s = result['s']
-                self.adj_matrix[[r, s]] = self.adj_matrix[[s, r]]
-                self.cost_fun += result['delta']
-                except_fac = result['r']
-            else:
-                return np.where(self.adj_matrix.T == 1)[1]
+                if result is not None:
+                    r = result['r']
+                    s = result['s']
+                    self.adj_matrix[[r, s]] = self.adj_matrix[[s, r]]
+                    self.cost_fun += result['delta']
+                    except_fac = result['r']
+                else:
+                    return np.where(self.adj_matrix.T == 1)[1]
+
 
     def first_improvement(self, except_fac, dlb=False):
         if dlb:
@@ -76,16 +79,14 @@ class LocalSearch:
                     continue
                 delta = self.delta_function(s, r)
                 if delta < 0:
-                    return {'adj_matrix': self.adj_matrix, 'delta': delta, 'r': r, 's': s}
-                elif dlb:
-                    bits[r] = 0
+                    return {'delta': delta, 'r': r, 's': s}
+            bits[r] = 1
         return None
 
-    def best_improvement(self, except_fac, dlb=False):
 
+    def best_improvement(self, except_fac, dlb=False):
         min_delta = 0
         min_result = None
-
         if dlb:
             bits = np.zeros(self.n)
         for r, row in enumerate(self.adj_matrix):
@@ -98,15 +99,15 @@ class LocalSearch:
                 delta = self.delta_function(s, r)
                 if delta < 0 and delta < min_delta:
                     min_delta = delta
-                    min_result = {'adj_matrix': self.adj_matrix, 'delta': delta, 'r': r, 's': s}
-
+                    min_result = {'delta': delta, 'r': r, 's': s}
             if min_result is not None:
                 return min_result
             elif dlb:
                 bits[r] = 0
 
-    def stochastic_2_opt(self, iterations):
-        for iter in range(iterations):
+
+    def stochastic_2_opt(self, iters):
+        for iter in range(iters):
             a = np.random.randint(low=0, high=self.n-1)
             b = np.random.randint(low=a+1, high=self.n)
             swap_part = np.where(self.adj_matrix.T == 1)[1][a:b+1]
@@ -117,13 +118,7 @@ class LocalSearch:
                 self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
                 self.cost_fun = prev_cost
         return None
-            # for idx in range(swap_part.size//2):
-            #     delta_sum += self.delta_function(swap_part[idx], swap_part[-(idx+1)])
-            # if delta_sum < 0:
-            #     self.cost_fun += delta_sum
-            #     self.adj_matrix[swap_part] = self.adj_matrix[np.flip(swap_part)]
-            #     verbose = np.where(self.adj_matrix.T == 1)[1]
-            #     print(verbose)
+
 
 
 # n = 4
