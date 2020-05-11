@@ -9,39 +9,38 @@ class Iterated(LocalSearch):
         super(Iterated, self).__init__(n, D, F)
         self.swap_num = max(1, n // 5)
 
-    def run_local(self, method, dlb=True):
-        method_name = copy.deepcopy(method)
-        method = getattr(LocalSearch, method)
-        except_fac = -1
-        while True:
-            if 'stochastic_2_opt' in method_name:
-                result = method(self, iters=100)
-            else:
-                result = method(self, except_fac, dlb=dlb)
-            if result is not None:
-                r = result['r']
-                s = result['s']
-                self.solution[[r, s]] = self.solution[[s, r]]
-                self.cost_fun += result['delta']
-                except_fac = result['r']
-            else:
-                return
-
-    def run(self, method, dlb=True, eye=False, iters=100):
+    def run(self, method, eye=False, epoches=100, **kwargs) -> np.array:
         self.solution = self.initial_solution(eye=eye)
         self.cost_fun = self.cost_function()
-        self.run_local(method, dlb=dlb)
+        self.plot_list.append(self.cost_fun)
+        self.run_local(method, **kwargs)
+        self.plot_list.append(self.cost_fun)
         best_solution = copy.deepcopy(self.solution)      # TODO: check deepcopy
         best_cost = self.cost_fun
-        for _ in range(iters):
+        for _ in range(epoches):
             self.perturbation()
-            self.run_local(method, dlb=dlb)
+            self.run_local(method, **kwargs)
+            self.plot_list.append(self.cost_fun)
             if self.cost_fun < best_cost:
                 best_cost = self.cost_fun
                 best_solution = self.solution
         self.solution = best_solution
         self.cost_fun = best_cost
+        self.plot_list.append(self.cost_fun)
         return np.argsort(self.solution)
+
+    def run_local(self, method, **kwargs):
+        method = getattr(LocalSearch, method)
+        while True:
+            result = method(self, **kwargs)
+            if result is not None:
+                r = result['r']
+                s = result['s']
+                self.solution[[r, s]] = self.solution[[s, r]]
+                self.cost_fun += result['delta']
+                kwargs['except_fac'] = result['r']
+            else:
+                return None
 
     def perturbation(self):
         k = sample(range(self.n), 2 * self.swap_num)
@@ -68,7 +67,7 @@ class Iterated(LocalSearch):
 # print(test.cost_fun)
 
 
-#
+
 # n = 5
 # D = np.array([[0, 50, 50, 94, 50],
 #               [50, 0, 22, 50, 36],
@@ -85,3 +84,4 @@ class Iterated(LocalSearch):
 # print('D is: \n', D)
 # print('\n', test.run('best_improvement'))
 # print(test.cost_fun)
+# test.plot()

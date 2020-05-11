@@ -22,7 +22,7 @@ def get_time(cases, algorithms=[LocalSearch, Iterated, Guided],
                     try:
                         with time_limit(lim_sec):
                             t0 = time.time()
-                            algorithm.run(method, dlb=True, iters=10)
+                            algorithm.run(method)
                             t1 = time.time()
                             time_list.append(t1 - t0)
                     except TimeoutException as e:

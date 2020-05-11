@@ -3,7 +3,6 @@ from os.path import join
 import os
 
 def get_case(path):
-
     with open(path, 'r') as file:
         data = file.readlines()
         n = int(data.pop(0)[:-1])
@@ -22,12 +21,10 @@ def get_case(path):
             string = data.pop(0)[:-1].replace('  ', ' ').split(' ')[1:]
             F.append(np.asarray(string, dtype=np.int32))
         F = np.asarray(F)
-
     dct = { 'n': n,
             'D': D,
             'F': F,
             }
-
     return dct
 
 def get_all() -> list:
