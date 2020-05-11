@@ -1,0 +1,10 @@
+,file,algorithm,method,mean_time,mean_result
+0,tai20a,LocalSearch,first_improvement,0.10710248090000504,748778
+1,tai20a,LocalSearch,best_improvement,0.11071624610000157,744543
+2,tai20a,LocalSearch,stochastic_2_opt,0.04653116180000296,839701
+3,tai20a,Iterated,first_improvement,1.562291696600002,722426
+4,tai20a,Iterated,best_improvement,1.7740435900999985,723525
+5,tai20a,Iterated,stochastic_2_opt,0.9547491415999986,817442
+6,tai20a,Guided,first_improvement,0.5115786477,734898
+7,tai20a,Guided,best_improvement,0.558344188999996,733539
+8,tai20a,Guided,stochastic_2_opt,1.0667561201999973,851897
