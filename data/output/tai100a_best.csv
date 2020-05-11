@@ -1,0 +1,4 @@
+,file,algorithm,method,best_result
+0,tai100a,LocalSearch,best_improvement,21784684
+1,tai100a,Iterated,best_improvement,21669774
+2,tai100a,Guided,best_improvement,21902876
