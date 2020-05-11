@@ -10,41 +10,6 @@ from tools.load_data import get_case
 from timeit import default_timer
 from tqdm import tqdm
 
-
-def get_time(cases, algorithms=[LocalSearch, Iterated, Guided],
-             methods=['stochastic_2_opt', 'first_improvement', 'best_improvement'],
-             iterations=3, lim_sec=300, file_name='time.csv'):
-    df = pd.DataFrame(columns=['Method', 'Number of items', 'Mean', 'Median', 'Min', 'Max', 'Variance'])
-    for i, case in enumerate(cases):
-        for algo in algorithms:
-            algorithm = algo(*case.values())
-            for method in methods:
-                time_list = []
-                flag = 1
-                for _ in range(iterations):
-                    try:
-                        with time_limit(lim_sec):
-                            t0 = time.time()
-                            algorithm.run(method)
-                            t1 = time.time()
-                            time_list.append(t1 - t0)
-                    except TimeoutException as e:
-                        df = df.append(
-                            pd.Series([algo.__name__ + '/' + method, case['n'], str(lim_sec) + ' seconds have passed!',
-                                       np.nan, np.nan, np.nan, np.nan], index=df.columns), ignore_index=True)
-                        flag = 0
-                        break
-                if flag:
-                    time_list = np.array(time_list)
-                    df = df.append(
-                        pd.Series([algo.__name__ + '/' + method, case['n'], np.mean(time_list), np.median(time_list),
-                                   np.min(time_list), np.max(time_list), np.var(time_list)],
-                                  index=df.columns), ignore_index=True)
-
-    df.to_csv('./data/output/' + file_name)
-    return df
-
-
 def get_local_result(path, method, stochastic_iters=100):
     data = get_case(path)
     path = path.rsplit('/', maxsplit=1)[-1]
@@ -144,13 +109,6 @@ def get_results(func, iterations, **kwargs):
     }
     return result
 
-# # ans = get_results(get_guided_result, 10, path='../data/benchmarks/tai20a',
-# #             method='first_improvement', epoches=100, mu=1, )
-# ans = get_results(get_guided_result, 10, path='../data/benchmarks/tai20a',
-#             method='first_improvement', epoches=100, mu=1, stochastic_iters=97)
-# #
-# print(ans)
-
 
 def get_time_table(path, iterations, epoches=None, mu=1):
     df = pd.DataFrame(columns=['file', 'algorithm', 'method', 'mean_time', 'mean_result'])
@@ -182,7 +140,7 @@ def get_time_table(path, iterations, epoches=None, mu=1):
                       result['info']['method'], mean_time, int(mean_cost)], index=df.columns),
                       ignore_index=True)
     filename = result['info']['file']
-    df.to_csv(f'../data/output/{filename}_time.csv')
+    df.to_csv(f'./data/output/{filename}_time.csv')
     return df
 
 
@@ -227,16 +185,12 @@ def get_best_table(path, iterations, epoches=None, mu=1):
         best_result = best_result_by_method[best_idx].tolist()
         best_result = " ".join(str(x) for x in best_result)
         name = path.rsplit('/', maxsplit=1)[-1].capitalize()+'.sol'
-        with open(f'../data/output/to_send/{name}_{result["info"]["algorithm"]}', 'w') as file:
+        with open(f'./data/output/to_send/{name}_{result["info"]["algorithm"]}', 'w') as file:
             file.write(best_result)
         file.close()
 
     filename = result['info']['file']
 
-    df.to_csv(f'../data/output/{filename}_best.csv')
+    df.to_csv(f'./data/output/{filename}_best.csv')
     return df
 
-
-df = get_time_table('../data/benchmarks/tai40a', 3, epoches=10)
-
-print(df)

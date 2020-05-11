@@ -10,7 +10,7 @@ class Guided(LocalSearch):
         self.mu = None
         self.penalty = np.zeros((self.n, self.n))
 
-    def run(self, method, eye=False, epoches=100, mu=0.1, **kwargs) -> np.array:
+    def run(self, method, eye=False, epoches=100, mu=1, **kwargs) -> np.array:
         self.mu = mu
         self.solution = self.initial_solution(eye=eye)
         self.cost_fun = self.cost_function()
@@ -27,13 +27,14 @@ class Guided(LocalSearch):
             utils = self.utils()
             max_fac = np.argmax(utils)
             self.penalty[max_fac, self.solution[max_fac]] += 1
+
         self.solution = best_solution
         self.cost_fun = best_cost_fun
         self.plot_list.append(self.cost_fun)
         return np.argsort(self.solution)
 
     def run_local(self, method, **kwargs):
-        method = getattr(LocalSearch, method)
+        method = getattr(Guided, method)
         while True:
             result = method(self, **kwargs)
             if result is not None:
