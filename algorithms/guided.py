@@ -118,22 +118,3 @@ class Guided(LocalSearch):
                 bits[r] = 1
         return None
 
-
-
-# n = 5
-# D = np.array([[0, 50, 50, 94, 50],
-#               [50, 0, 22, 50, 36],
-#               [50, 22, 0, 44, 14],
-#               [94, 50, 44, 0, 50],
-#               [50, 36, 14, 50, 0]])
-# F = np.array([[0, 0, 2, 0, 3],
-#               [0, 0, 0, 3, 0],
-#               [2, 0, 0, 0, 0],
-#               [0, 3, 0, 0, 1],
-#               [3, 0, 0, 1, 0]])
-# test = Guided(n, D, F)
-# print('F is: \n', F)
-# print('D is: \n', D)
-# print('\n', test.run('best_improvement', mu=1))
-# print(test.cost_fun)
-# test.plot()

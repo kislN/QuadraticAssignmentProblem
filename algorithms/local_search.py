@@ -90,8 +90,8 @@ class LocalSearch:
                 bits[r] = 1
         return None
 
-    def stochastic_2_opt(self, iters=100):
-        for iter in range(iters):
+    def stochastic_2_opt(self, stochastic_iters=100):
+        for iter in range(stochastic_iters):
             a = np.random.randint(low=0, high=self.n-1)
             b = np.random.randint(low=a+1, high=self.n)
             swap_part = np.arange(a, b+1)
@@ -112,47 +112,4 @@ class LocalSearch:
         plt.xlabel('iterations')
         plt.ylabel('cost')
         plt.show()
-
-
-
-
-
-
-
-# n = 4
-# D = np.array([[0, 22, 53, 53],
-#               [22, 0, 40, 62],
-#               [53, 40, 0, 55],
-#               [53, 62, 55, 0]])
-# F = np.array([[0, 3, 0, 2],
-#               [3, 0, 0, 1],
-#               [0, 0, 0, 4],
-#               [2, 1, 4, 0]])
-# test = LocalSearch(n, D, F)
-# print('F is: \n', F)
-# print('D is: \n', D)
-# print(test.cost_fun)
-# print('\n', test.run('stochastic_2_opt'))
-# print(test.cost_fun)
-
-
-
-# n = 5
-# D = np.array([[0, 50, 50, 94, 50],
-#               [50, 0, 22, 50, 36],
-#               [50, 22, 0, 44, 14],
-#               [94, 50, 44, 0, 50],
-#               [50, 36, 14, 50, 0]])
-# F = np.array([[0, 0, 2, 0, 3],
-#               [0, 0, 0, 3, 0],
-#               [2, 0, 0, 0, 0],
-#               [0, 3, 0, 0, 1],
-#               [3, 0, 0, 1, 0]])
-# test = LocalSearch(n, D, F)
-# print('F is: \n', F)
-# print('D is: \n', D)
-# print('\n', test.run('best_improvement'))
-# print(test.cost_fun)
-# print(test.plot_list)
-# test.plot(title='So')
 
